@@ -64,8 +64,11 @@ namespace SmtpServer
                 {
                     var command = await ReadCommandAsync(context, cancellationToken).ConfigureAwait(false);
 
+                    Console.WriteLine("COMMAND RECEIVED: " + command?.Name ?? "NONE");
+
                     if (command == null)
                     {
+                        Console.WriteLine("NO COMMAND, EXITING LOOP.");
                         return;
                     }
 
