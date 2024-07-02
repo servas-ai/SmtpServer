@@ -18,7 +18,7 @@ namespace SmtpServer.StateMachine
                 { HeloCommand.Command, WaitingForMailSecureWhenSecure },
                 { EhloCommand.Command, WaitingForMailSecureWhenSecure },
                 // TODO: implement actual XCLIENT support
-                { XClientCommand.Command, SmtpStateId.Initialized }
+                { XClientCommand.Command, SmtpStateId.WaitingForMail }
             },
             new SmtpState(SmtpStateId.WaitingForMail)
             {
