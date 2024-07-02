@@ -29,7 +29,8 @@ namespace SmtpServer.Protocol
             // @see https://www.postfix.org/XCLIENT_README.html Section "XCLIENT Example"
             var version = typeof(SmtpSession).GetTypeInfo().Assembly.GetName().Version;
             context.Pipe.Output.WriteLine($"220 {context.ServerOptions.ServerName} v{version} ESMTP ready");
-            return false; // @see: Method summary
+            await context.Pipe.Output.FlushAsync(cancellationToken).ConfigureAwait(false);
+            return true;
         }
     }
 }
