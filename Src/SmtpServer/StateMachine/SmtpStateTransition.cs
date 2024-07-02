@@ -15,8 +15,9 @@ namespace SmtpServer.StateMachine
 
         internal bool CanAccept(SmtpSessionContext context)
         {
-            Console.WriteLine("STATE TRANSITION: Can Accept: " + _canAcceptDelegate.Method.Name);
-            return _canAcceptDelegate(context);
+            var canAccept = _canAcceptDelegate(context);
+            Console.WriteLine("STATE TRANSITION: Can Accept: " + canAccept);
+            return canAccept;
         }
 
         internal SmtpStateId Transition(SmtpSessionContext context)
