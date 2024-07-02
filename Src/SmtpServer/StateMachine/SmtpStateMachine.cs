@@ -1,4 +1,5 @@
 ﻿using SmtpServer.Protocol;
+using System;
 using System.Linq;
 
 namespace SmtpServer.StateMachine
@@ -28,11 +29,12 @@ namespace SmtpServer.StateMachine
         public bool TryAccept(SmtpCommand command, out SmtpResponse errorResponse)
         {
             errorResponse = null;
-
+            Console.WriteLine("STATE MACHINE - TryAccept entry");
+            
             if (_state.Transitions.TryGetValue(command.Name, out var transition) == false || transition.CanAccept(_context) == false)
             {
+                Console.WriteLine("STATE MACHINE - TryAccept --> FAILED <--");
                 var commands = _state.Transitions.Where(t => t.Value.CanAccept(_context)).Select(t => t.Key);
-
                 errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, $"expected {string.Join("/", commands)}");
                 return false;
             }
