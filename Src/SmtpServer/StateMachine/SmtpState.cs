@@ -13,12 +13,15 @@ namespace SmtpServer.StateMachine
 
         internal void Add(string command)
         {
-            Transitions.Add(command, new SmtpStateTransition(context => true, context => StateId));
+            Transitions.Add(command, new SmtpStateTransition(context => {
+                Console.WriteLine("CURRENT STATE (STATIC): " + StateId + ", MOVING TO " + StateId + ".");
+                return true;
+            }, context => StateId));
         }
 
         internal void Add(string command, SmtpStateId state)
         {
-            Transitions.Add(command, new SmtpStateTransition(context => true, context => state));
+            Transitions.Add(command, new SmtpStateTransition(context => {Console.WriteLine("CURRENT STATE (DEFINED): " + StateId + ", MOVING TO " + state + "."); return true;}, context => state));
         }
 
         internal void Add(string command, Func<SmtpSessionContext, SmtpStateId> transitionDelegate)
