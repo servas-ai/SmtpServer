@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SmtpServer.ComponentModel;
@@ -32,12 +33,16 @@ namespace SmtpServer.Protocol
         /// if the current state is to be maintained.</returns>
         internal override async Task<bool> ExecuteAsync(SmtpSessionContext context, CancellationToken cancellationToken)
         {
+            Console.WriteLine("MAIL COMMAND EXECUTION.");
             if (context.EndpointDefinition.AuthenticationRequired && context.Authentication.IsAuthenticated == false)
             {
+                Console.WriteLine("MAIL COMMAND EXECUTION: AUTHENTICATION REQUIRED.");
                 await context.Pipe.Output.WriteReplyAsync(SmtpResponse.AuthenticationRequired, cancellationToken).ConfigureAwait(false);
                 return false;
             }
 
+            Console.WriteLine("MAIL COMMAND EXECUTION: AUTHENTICATION NOT REQUIRED.");
+            Console.WriteLine("MAIL COMMAND EXECUTION: ADDRESS: " + Address.ToString());
             context.Transaction.Reset();
             context.Transaction.Parameters = Parameters;
 
@@ -47,26 +52,29 @@ namespace SmtpServer.Protocol
             // check against the server supplied maximum
             if (context.ServerOptions.MaxMessageSize > 0 && size > context.ServerOptions.MaxMessageSize)
             {
+                Console.WriteLine("MAIL COMMAND EXECUTION: SIZE LIMIT EXCEEDED OR INVALID: " + size);
                 await context.Pipe.Output.WriteReplyAsync(SmtpResponse.SizeLimitExceeded, cancellationToken).ConfigureAwait(false);
                 return false;
             }
 
             var mailboxFilter = context.ServiceProvider.GetService<IMailboxFilterFactory, IMailboxFilter>(context, MailboxFilter.Default);
-
             using var container = new DisposableContainer<IMailboxFilter>(mailboxFilter);
 
             switch (await container.Instance.CanAcceptFromAsync(context, Address, size, cancellationToken).ConfigureAwait(false))
             {
                 case true:
                     context.Transaction.From = Address;
+                    Console.WriteLine("MAIL COMMAND EXECUTION: FROM ACCEPTED.");
                     await context.Pipe.Output.WriteReplyAsync(SmtpResponse.Ok, cancellationToken).ConfigureAwait(false);
                     return true;
 
                 case false:
+                    Console.WriteLine("MAIL COMMAND EXECUTION: FROM REJECTED.");
                     await context.Pipe.Output.WriteReplyAsync(SmtpResponse.MailboxUnavailable, cancellationToken).ConfigureAwait(false);
                     return false;
             }
 
+            Console.WriteLine("MAIL COMMAND EXECUTION: THROWING UP HAHA.");
             throw new SmtpResponseException(SmtpResponse.TransactionFailed);
         }
 
@@ -76,11 +84,14 @@ namespace SmtpServer.Protocol
         /// <returns>The estimated message size that was supplied by the client.</returns>
         int GetMessageSize()
         {
+            Console.WriteLine("GETTING MESSAGE SIZE.");
             if (Parameters.TryGetValue("SIZE", out var value) == false)
             {
+                Console.WriteLine("NO SIZE PARAMETER FOUND.");
                 return 0;
             }
 
+            Console.WriteLine("SIZE PARAMETER FOUND: " + value);
             return int.TryParse(value, out var size) == false ? 0 : size;
         }
 
