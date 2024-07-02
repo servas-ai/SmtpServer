@@ -30,7 +30,7 @@ namespace SmtpServer.StateMachine
                 { MailCommand.Command, SmtpStateId.WithinTransaction },
 
                 // TODO: implement actual XCLIENT support
-                { XClientCommand.Command, SmtpStateId.Initialized }
+                { XClientCommand.Command, SmtpStateId.WaitingForMail }
             },
             new SmtpState(SmtpStateId.WaitingForMailSecure)
             {
