@@ -32,6 +32,7 @@ namespace SmtpServer.Protocol
         /// <returns>Returns true if a command could be made, false if not.</returns>
         public bool TryMake(ref ReadOnlySequence<byte> buffer, out SmtpCommand command, out SmtpResponse errorResponse)
         {
+            Console.WriteLine("SmtpParser: TryMake entry");
             return Make(buffer, TryMakeEhlo, out command, out errorResponse)
                 || Make(buffer, TryMakeHelo, out command, out errorResponse)
                 || Make(buffer, TryMakeXClient, out command, out errorResponse)
@@ -2013,6 +2014,13 @@ namespace SmtpServer.Protocol
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="command"></param>
+        /// <param name="errorResponse"></param>
+        /// <returns></returns>
         public bool TryMakeXClient(ref TokenReader reader, out SmtpCommand command, out SmtpResponse errorResponse)
         {
             command = null;
@@ -2025,39 +2033,40 @@ namespace SmtpServer.Protocol
 
             var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            while (reader.Peek().Kind != TokenKind.None)
-            {
-                Console.WriteLine("TryMakeXClient: Reading next parameter");
+            // while (reader.Peek().Kind != TokenKind.None)
+            // {
+            //     Console.WriteLine("TryMakeXClient: Reading next parameter");
 
-                // Skip any spaces that may be present
-                reader.Skip(TokenKind.Space);
+            //     // Skip any spaces that may be present
+            //     reader.Skip(TokenKind.Space);
 
-                if (reader.TryMake(TryMakeText, out var keyword) == false)
-                {
-                    Console.WriteLine("TryMakeXClient: No keyword found");
-                    errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Invalid XCLIENT parameter keyword");
-                    return false;
-                }
+            //     if (reader.TryMake(TryMakeText, out var keyword) == false)
+            //     {
+            //         Console.WriteLine("TryMakeXClient: No keyword found");
+            //         errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Invalid XCLIENT parameter keyword");
+            //         return false;
+            //     }
 
-                if (reader.Take().Kind != TokenKind.Equal)
-                {
-                    Console.WriteLine("TryMakeXClient: Expected '=' after XCLIENT parameter keyword");
-                    errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Expected '=' after XCLIENT parameter keyword");
-                    return false;
-                }
+            //     if (reader.Take().Kind != TokenKind.Equal)
+            //     {
+            //         Console.WriteLine("TryMakeXClient: Expected '=' after XCLIENT parameter keyword");
+            //         errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Expected '=' after XCLIENT parameter keyword");
+            //         return false;
+            //     }
 
-                if (reader.TryMake(TryMakeText, out var value) == false)
-                {
-                    Console.WriteLine("TryMakeXClient: No value found");
-                    errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Invalid XCLIENT parameter value");
-                    return false;
-                }
+            //     if (reader.TryMake(TryMakeText, out var value) == false)
+            //     {
+            //         Console.WriteLine("TryMakeXClient: No value found");
+            //         errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Invalid XCLIENT parameter value");
+            //         return false;
+            //     }
 
-                parameters.Add(StringUtil.Create(keyword), StringUtil.Create(value));
-            }
+            //     parameters.Add(StringUtil.Create(keyword), StringUtil.Create(value));
+            // }
 
             Console.WriteLine("TryMakeXClient: Creating XCLIENT command");
             command = _smtpCommandFactory.CreateXClient(parameters);
+            
             Console.WriteLine("TryMakeXClient: XCLIENT command created, TryMakeXClient returning true.");
             return true;
         }
