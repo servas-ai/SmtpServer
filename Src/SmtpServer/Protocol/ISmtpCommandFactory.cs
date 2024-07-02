@@ -80,5 +80,11 @@ namespace SmtpServer.Protocol
         /// <param name="destinationEndpoint">The destination endpoint.</param>
         /// <returns>The PROXY command.</returns>
         SmtpCommand CreateProxy(IPEndPoint sourceEndpoint = null, IPEndPoint destinationEndpoint = null);
+
+        /// <summary>
+        /// Create a XCLIENT command.
+        /// </summary>
+        /// <returns></returns>
+        SmtpCommand CreateXClient();
     }
 }

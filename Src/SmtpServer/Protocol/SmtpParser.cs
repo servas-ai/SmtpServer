@@ -43,6 +43,7 @@ namespace SmtpServer.Protocol
                 || Make(buffer, TryMakeStartTls, out command, out errorResponse)
                 || Make(buffer, TryMakeAuth, out command, out errorResponse)
                 || Make(buffer, TryMakeProxy, out command, out errorResponse)
+                || Make(buffer, TryMakeXClient, out command, out errorResponse)
                 || Make(buffer, MakeUnrecognized, out command, out errorResponse);
 
             static bool Make(ReadOnlySequence<byte> buffer, TryMakeDelegate tryMakeDelegate, out SmtpCommand command, out SmtpResponse errorResponse)
@@ -2009,6 +2010,37 @@ namespace SmtpServer.Protocol
                 return true;
             }
 
+            return false;
+        }
+
+        public bool TryMakeXClient(ref TokenReader reader, out SmtpCommand command, out SmtpResponse errorResponse)
+        {
+            command = null;
+            errorResponse = null;
+
+            if (reader.TryMake(TryMakeText, out var text))
+            {
+                Span<char> xclient = stackalloc char[7];
+                xclient[0] = 'X';
+                xclient[1] = 'C';
+                xclient[2] = 'L';
+                xclient[3] = 'I';
+                xclient[4] = 'E';
+                xclient[5] = 'N';
+                xclient[6] = 'T';
+
+                if (text.CaseInsensitiveStringEquals(ref xclient))
+                {
+                    // Ignore XCLIENT
+                    // Jump back to EHLO phase
+                    command = _smtpCommandFactory.CreateXClient();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
             return false;
         }
     }

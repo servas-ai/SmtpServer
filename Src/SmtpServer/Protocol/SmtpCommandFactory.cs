@@ -113,5 +113,14 @@ namespace SmtpServer.Protocol
         {
             return new ProxyCommand(sourceEndpoint, destinationEndpoint);
         }
+
+        /// <summary>
+        /// Create a XCLIENT command.
+        /// </summary>
+        /// <returns>The XCLIENT command.</returns>
+        public virtual SmtpCommand CreateXClient()
+        {
+            return new XClientCommand();
+        }
     }
 }

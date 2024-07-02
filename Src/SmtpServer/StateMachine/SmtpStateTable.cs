@@ -27,7 +27,10 @@ namespace SmtpServer.StateMachine
                 { AuthCommand.Command, context => context.EndpointDefinition.AllowUnsecureAuthentication && context.Authentication.IsAuthenticated == false },
                 { HeloCommand.Command, SmtpStateId.WaitingForMail },
                 { EhloCommand.Command, SmtpStateId.WaitingForMail },
-                { MailCommand.Command, SmtpStateId.WithinTransaction }
+                { MailCommand.Command, SmtpStateId.WithinTransaction },
+
+                // TODO: implement actual XCLIENT support
+                { XClientCommand.Command, SmtpStateId.Initialized }
             },
             new SmtpState(SmtpStateId.WaitingForMailSecure)
             {
