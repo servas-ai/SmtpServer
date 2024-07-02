@@ -18,7 +18,7 @@ namespace SmtpServer.StateMachine
                 { HeloCommand.Command, WaitingForMailSecureWhenSecure },
                 { EhloCommand.Command, WaitingForMailSecureWhenSecure },
                 // TODO: implement actual XCLIENT support
-                { XClientCommand.Command }
+                { XClientCommand.Command, SmtpStateId.Initialized }
             },
             new SmtpState(SmtpStateId.WaitingForMail)
             {
@@ -31,7 +31,7 @@ namespace SmtpServer.StateMachine
                 { EhloCommand.Command, SmtpStateId.WaitingForMail },
                 { MailCommand.Command, SmtpStateId.WithinTransaction },
                 // TODO: implement actual XCLIENT support
-                { XClientCommand.Command }
+                { XClientCommand.Command, SmtpStateId.WaitingForMail }
             },
             new SmtpState(SmtpStateId.WaitingForMailSecure)
             {
@@ -43,7 +43,7 @@ namespace SmtpServer.StateMachine
                 { EhloCommand.Command, SmtpStateId.WaitingForMailSecure },
                 { MailCommand.Command, SmtpStateId.WithinTransaction },
                 // TODO: implement actual XCLIENT support
-                { XClientCommand.Command }
+                { XClientCommand.Command, SmtpStateId.WaitingForMailSecure }
             },
             new SmtpState(SmtpStateId.WithinTransaction)
             {
