@@ -33,15 +33,9 @@ namespace SmtpServer.Protocol
             // For now, we ignore the XCLIENT command and return the expected response.
             // No internal state is altered.
             // @see https://www.postfix.org/XCLIENT_README.html Section "XCLIENT Example"
-            Console.WriteLine("[>] RECEIVED XCLIENT COMMAND, IGNORING IT.");
-            Console.WriteLine("[>] XCLIENT PARAMETERS:");
-            foreach (var parameter in _parameters)
-            {
-                Console.WriteLine($"\t[>] {parameter.Key}={parameter.Value}");
-            }
-            Console.WriteLine("[>] END OF XCLIENT PARAMETERS.");
             var version = typeof(SmtpSession).GetTypeInfo().Assembly.GetName().Version;
             context.Pipe.Output.WriteLine($"220 {context.ServerOptions.ServerName} v{version} ESMTP ready");
+            await context.Pipe.Output.FlushAsync(cancellationToken);
             return true;
         }
     }
