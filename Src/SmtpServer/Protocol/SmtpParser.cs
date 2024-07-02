@@ -34,6 +34,7 @@ namespace SmtpServer.Protocol
         {
             return Make(buffer, TryMakeEhlo, out command, out errorResponse)
                 || Make(buffer, TryMakeHelo, out command, out errorResponse)
+                || Make(buffer, TryMakeXClient, out command, out errorResponse)
                 || Make(buffer, TryMakeMail, out command, out errorResponse)
                 || Make(buffer, TryMakeRcpt, out command, out errorResponse)
                 || Make(buffer, TryMakeData, out command, out errorResponse)
@@ -43,7 +44,6 @@ namespace SmtpServer.Protocol
                 || Make(buffer, TryMakeStartTls, out command, out errorResponse)
                 || Make(buffer, TryMakeAuth, out command, out errorResponse)
                 || Make(buffer, TryMakeProxy, out command, out errorResponse)
-                || Make(buffer, TryMakeXClient, out command, out errorResponse)
                 || Make(buffer, MakeUnrecognized, out command, out errorResponse);
 
             static bool Make(ReadOnlySequence<byte> buffer, TryMakeDelegate tryMakeDelegate, out SmtpCommand command, out SmtpResponse errorResponse)
@@ -2027,22 +2027,28 @@ namespace SmtpServer.Protocol
 
             while (reader.Peek().Kind != TokenKind.None)
             {
+                Console.WriteLine("TryMakeXClient: Reading next parameter");
+
+                // Skip any spaces that may be present
                 reader.Skip(TokenKind.Space);
 
                 if (reader.TryMake(TryMakeText, out var keyword) == false)
                 {
+                    Console.WriteLine("TryMakeXClient: No keyword found");
                     errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Invalid XCLIENT parameter keyword");
                     return false;
                 }
 
                 if (reader.Take().Kind != TokenKind.Equal)
                 {
+                    Console.WriteLine("TryMakeXClient: Expected '=' after XCLIENT parameter keyword");
                     errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Expected '=' after XCLIENT parameter keyword");
                     return false;
                 }
 
                 if (reader.TryMake(TryMakeText, out var value) == false)
                 {
+                    Console.WriteLine("TryMakeXClient: No value found");
                     errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Invalid XCLIENT parameter value");
                     return false;
                 }
@@ -2050,7 +2056,9 @@ namespace SmtpServer.Protocol
                 parameters.Add(StringUtil.Create(keyword), StringUtil.Create(value));
             }
 
+            Console.WriteLine("TryMakeXClient: Creating XCLIENT command");
             command = _smtpCommandFactory.CreateXClient(parameters);
+            Console.WriteLine("TryMakeXClient: XCLIENT command created, TryMakeXClient returning true.");
             return true;
         }
 
@@ -2061,6 +2069,7 @@ namespace SmtpServer.Protocol
         /// <returns>true if the XCLIENT text sequence could be made, false if not.</returns>
         public bool TryMakeXClientLiteral(ref TokenReader reader)
         {
+            Console.WriteLine("TryMakeXClientLiteral");
             if (reader.TryMake(TryMakeText, out var text))
             {
                 Span<char> command = stackalloc char[7];
@@ -2071,10 +2080,11 @@ namespace SmtpServer.Protocol
                 command[4] = 'E';
                 command[5] = 'N';
                 command[6] = 'T';
-
-                return text.CaseInsensitiveStringEquals(ref command);
+                var matches = text.CaseInsensitiveStringEquals(ref command);
+                Console.WriteLine($"TryMakeXClientLiteral matches: {matches}");
+                return matches;
             }
-
+            Console.WriteLine($"TryMakeXClientLiteral: No text found");
             return false;
         }
     }
