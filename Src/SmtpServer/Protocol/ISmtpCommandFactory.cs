@@ -85,6 +85,6 @@ namespace SmtpServer.Protocol
         /// Create a XCLIENT command.
         /// </summary>
         /// <returns></returns>
-        SmtpCommand CreateXClient();
+        SmtpCommand CreateXClient(Dictionary<string, string> parameters);
     }
 }

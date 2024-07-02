@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,11 +10,15 @@ namespace SmtpServer.Protocol
     public sealed class XClientCommand : SmtpCommand
     {
         public const string Command = "XCLIENT";
+        private Dictionary<string, string> _parameters;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public XClientCommand() : base(Command) { }
+        public XClientCommand(Dictionary<string, string> parameters) : base(Command)
+        {
+            _parameters = parameters;
+        }
 
         /// <summary>
         /// Execute the command.
@@ -27,6 +33,13 @@ namespace SmtpServer.Protocol
             // For now, we ignore the XCLIENT command and return the expected response.
             // No internal state is altered.
             // @see https://www.postfix.org/XCLIENT_README.html Section "XCLIENT Example"
+            Console.WriteLine("[>] RECEIVED XCLIENT COMMAND, IGNORING IT.");
+            Console.WriteLine("[>] XCLIENT PARAMETERS:");
+            foreach (var parameter in _parameters)
+            {
+                Console.WriteLine($"\t[>] {parameter.Key}={parameter.Value}");
+            }
+            Console.WriteLine("[>] END OF XCLIENT PARAMETERS.");
             var version = typeof(SmtpSession).GetTypeInfo().Assembly.GetName().Version;
             context.Pipe.Output.WriteLine($"220 {context.ServerOptions.ServerName} v{version} ESMTP ready");
             await context.Pipe.Output.FlushAsync(cancellationToken).ConfigureAwait(false);

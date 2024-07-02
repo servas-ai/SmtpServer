@@ -118,9 +118,9 @@ namespace SmtpServer.Protocol
         /// Create a XCLIENT command.
         /// </summary>
         /// <returns>The XCLIENT command.</returns>
-        public virtual SmtpCommand CreateXClient()
+        public virtual SmtpCommand CreateXClient(Dictionary<string, string> parameters)
         {
-            return new XClientCommand();
+            return new XClientCommand(parameters);
         }
     }
 }

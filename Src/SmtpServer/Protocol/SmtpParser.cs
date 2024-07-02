@@ -2018,29 +2018,63 @@ namespace SmtpServer.Protocol
             command = null;
             errorResponse = null;
 
-            if (reader.TryMake(TryMakeText, out var text))
+            if (TryMakeXClientLiteral(ref reader) == false)
             {
-                Span<char> xclient = stackalloc char[7];
-                xclient[0] = 'X';
-                xclient[1] = 'C';
-                xclient[2] = 'L';
-                xclient[3] = 'I';
-                xclient[4] = 'E';
-                xclient[5] = 'N';
-                xclient[6] = 'T';
+                return false;
+            }
 
-                if (text.CaseInsensitiveStringEquals(ref xclient))
+            var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            while (reader.Peek().Kind != TokenKind.None)
+            {
+                reader.Skip(TokenKind.Space);
+
+                if (reader.TryMake(TryMakeText, out var keyword) == false)
                 {
-                    // Ignore XCLIENT
-                    // Jump back to EHLO phase
-                    command = _smtpCommandFactory.CreateXClient();
-                    return true;
-                }
-                else
-                {
+                    errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Invalid XCLIENT parameter keyword");
                     return false;
                 }
+
+                if (reader.Take().Kind != TokenKind.Equal)
+                {
+                    errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Expected '=' after XCLIENT parameter keyword");
+                    return false;
+                }
+
+                if (reader.TryMake(TryMakeText, out var value) == false)
+                {
+                    errorResponse = new SmtpResponse(SmtpReplyCode.SyntaxError, "Invalid XCLIENT parameter value");
+                    return false;
+                }
+
+                parameters.Add(StringUtil.Create(keyword), StringUtil.Create(value));
             }
+
+            command = _smtpCommandFactory.CreateXClient(parameters);
+            return true;
+        }
+
+        /// <summary>
+        /// Try to make the XCLIENT text sequence.
+        /// </summary>
+        /// <param name="reader">The reader to perform the operation on.</param>
+        /// <returns>true if the XCLIENT text sequence could be made, false if not.</returns>
+        public bool TryMakeXClientLiteral(ref TokenReader reader)
+        {
+            if (reader.TryMake(TryMakeText, out var text))
+            {
+                Span<char> command = stackalloc char[7];
+                command[0] = 'X';
+                command[1] = 'C';
+                command[2] = 'L';
+                command[3] = 'I';
+                command[4] = 'E';
+                command[5] = 'N';
+                command[6] = 'T';
+
+                return text.CaseInsensitiveStringEquals(ref command);
+            }
+
             return false;
         }
     }
