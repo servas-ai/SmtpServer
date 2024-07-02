@@ -79,11 +79,16 @@ namespace SmtpServer
                     {
                         _stateMachine.Transition(context);
                     }
+                    else
+                    {
+                        Console.WriteLine("COMMAND EXECUTION OF " + command.Name + " FAILED");
+                    }
 
                     retries = _context.ServerOptions.MaxRetryCount;
                 }
                 catch (SmtpResponseException responseException) when (responseException.IsQuitRequested)
                 {
+                    Console.WriteLine("QUIT REQUESTED BY EXCEPTION WITH ISQUITREQUESTED SET TO TRUE.");
                     context.RaiseResponseException(responseException);
 
                     await context.Pipe.Output.WriteReplyAsync(responseException.Response, cancellationToken).ConfigureAwait(false);

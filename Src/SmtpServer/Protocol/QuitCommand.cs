@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using SmtpServer.IO;
 using System.IO;
+using System;
 
 namespace SmtpServer.Protocol
 {
@@ -24,6 +25,7 @@ namespace SmtpServer.Protocol
         /// if the current state is to be maintained.</returns>
         internal override async Task<bool> ExecuteAsync(SmtpSessionContext context, CancellationToken cancellationToken)
         {
+            Console.WriteLine("QUIT COMMAND EXECUTION.");
             context.IsQuitRequested = true;
 
             try
