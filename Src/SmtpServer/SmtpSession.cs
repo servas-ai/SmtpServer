@@ -71,6 +71,7 @@ namespace SmtpServer
 
                     if (_stateMachine.TryAccept(command, out var errorResponse) == false)
                     {
+                        Console.WriteLine("STATE MACHINE COULD NOT ACCEPT COMMAND");
                         throw new SmtpResponseException(errorResponse);
                     }
 
