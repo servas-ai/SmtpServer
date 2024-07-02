@@ -42,7 +42,6 @@ namespace SmtpServer.Protocol
             Console.WriteLine("[>] END OF XCLIENT PARAMETERS.");
             var version = typeof(SmtpSession).GetTypeInfo().Assembly.GetName().Version;
             context.Pipe.Output.WriteLine($"220 {context.ServerOptions.ServerName} v{version} ESMTP ready");
-            await context.Pipe.Output.FlushAsync(cancellationToken).ConfigureAwait(false);
             return true;
         }
     }
