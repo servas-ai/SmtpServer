@@ -56,11 +56,18 @@ namespace SmtpServer.Protocol
                 await context.Pipe.Output.WriteReplyAsync(SmtpResponse.SizeLimitExceeded, cancellationToken).ConfigureAwait(false);
                 return false;
             }
+            else
+            {
+                Console.WriteLine("MAIL COMMAND EXECUTION: SIZE LIMIT NOT EXCEEDED OR INVALID: " + size);
+            }
 
             var mailboxFilter = context.ServiceProvider.GetService<IMailboxFilterFactory, IMailboxFilter>(context, MailboxFilter.Default);
             using var container = new DisposableContainer<IMailboxFilter>(mailboxFilter);
 
-            switch (await container.Instance.CanAcceptFromAsync(context, Address, size, cancellationToken).ConfigureAwait(false))
+            Console.WriteLine("MAIL COMMAND EXECUTION: CHECKING IF CAN ACCEPT FROM.");
+            var accepted = await container.Instance.CanAcceptFromAsync(context, Address, size, cancellationToken).ConfigureAwait(false);
+            Console.WriteLine("MAIL COMMAND EXECUTION: ACCEPTED: " + accepted);
+            switch (accepted)
             {
                 case true:
                     context.Transaction.From = Address;
